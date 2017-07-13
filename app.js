@@ -34,6 +34,7 @@ bot.dialog('SearchHotels', [
         // try extracting entities
         var cityEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'builtin.geography.city');
         var trEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'AirportCode');
+        var cmEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Component');
         if (cityEntity) {
             // city entity detected, continue to next step
             session.dialogData.searchType = 'city';
@@ -42,6 +43,10 @@ bot.dialog('SearchHotels', [
             // airport entity detected, continue to next step
             session.dialogData.searchType = 'tr';
             next({ response: trEntity.entity });
+        } else if (cmEntity) {
+            // airport entity detected, continue to next step
+            session.dialogData.searchType = 'component';
+            next({ response: cmEntity.entity });
         } else {
             // no entities detected, ask user for a destination
             builder.Prompts.text(session, 'Please enter your destination');
@@ -80,6 +85,58 @@ bot.dialog('SearchHotels', [
     matches: 'SearchHotels',
     onInterrupted: function (session) {
         session.send('Please provide a destination');
+    }
+});
+
+bot.dialog('getComponentDetails', [
+    function (session, args, next) {
+        session.send('Welcome to the issue reslover! We are analyzing your message: \'%s\'', session.message.text);
+
+        // try extracting entities
+
+        var cmEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Component');
+        if (cmEntity) {
+            // airport entity detected, continue to next step
+            session.dialogData.searchType = 'component';
+            next({ response: cmEntity.entity });
+        } else {
+            // no entities detected, ask user for a destination
+            builder.Prompts.text(session, 'Please enter your destination');
+        }
+    },
+    function (session, results) {
+        var destination = results.response;
+
+        var message = 'Looking for resources';
+        if (session.dialogData.searchType === 'tr') {
+            message += ' near %s TR...';
+        } else {
+            message += ' for %s...';
+        }
+
+        session.send(message, destination);
+
+        // Async search
+        Store
+            .searchComponent(destination)
+            .then(function (hotels) {
+                // args
+                //session.send('I found %d :', hotels.length);
+
+                var message = new builder.Message()
+                    .attachmentLayout(builder.AttachmentLayout.carousel)
+                    .attachments(hotels.map(componentAsAttachment));
+
+                session.send(message);
+
+                // End
+                session.endDialog();
+            });
+    }
+]).triggerAction({
+    matches: 'getComponentDetails',
+    onInterrupted: function (session) {
+        session.send('Please provide valid component name');
     }
 });
 
@@ -135,6 +192,20 @@ function hotelAsAttachment(hotel) {
                 .title('More details')
                 .type('openUrl')
                 .value('https://mhweb.ericsson.se/TREditWeb/faces/oo/object.xhtml?eriref=HW12615')
+/// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
+        ]);
+}
+
+function componentAsAttachment(hotel) {
+    return new builder.HeroCard()
+        .title(hotel.name)
+        //.subtitle('Component %s. Status %d. Description %d.', hotel.name, hotel.numberOfReviews, hotel.priceStarting)
+        ///        .images([new builder.CardImage().url(hotel.image)])
+        .buttons([
+            new builder.CardAction()
+                .title('Wiki Link')
+                .type('openUrl')
+                .value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/mlm/index.php/Main_Page')
 /// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
         ]);
 }
