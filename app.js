@@ -29,19 +29,19 @@ bot.recognizer(recognizer);
 
 bot.dialog('SearchHotels', [
     function (session, args, next) {
-        session.send('Welcome to the Hotels finder! We are analyzing your message: \'%s\'', session.message.text);
+        session.send('Welcome to the issue reslover! We are analyzing your message: \'%s\'', session.message.text);
 
         // try extracting entities
         var cityEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'builtin.geography.city');
-        var airportEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'AirportCode');
+        var trEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'AirportCode');
         if (cityEntity) {
             // city entity detected, continue to next step
             session.dialogData.searchType = 'city';
             next({ response: cityEntity.entity });
-        } else if (airportEntity) {
+        } else if (trEntity) {
             // airport entity detected, continue to next step
-            session.dialogData.searchType = 'airport';
-            next({ response: airportEntity.entity });
+            session.dialogData.searchType = 'tr';
+            next({ response: trEntity.entity });
         } else {
             // no entities detected, ask user for a destination
             builder.Prompts.text(session, 'Please enter your destination');
@@ -50,9 +50,9 @@ bot.dialog('SearchHotels', [
     function (session, results) {
         var destination = results.response;
 
-        var message = 'Looking for hotels';
-        if (session.dialogData.searchType === 'airport') {
-            message += ' near %s airport...';
+        var message = 'Looking for resources';
+        if (session.dialogData.searchType === 'tr') {
+            message += ' near %s TR...';
         } else {
             message += ' in %s...';
         }
@@ -64,7 +64,7 @@ bot.dialog('SearchHotels', [
             .searchHotels(destination)
             .then(function (hotels) {
                 // args
-                session.send('I found %d hotels:', hotels.length);
+                session.send('I found %d TRs:', hotels.length);
 
                 var message = new builder.Message()
                     .attachmentLayout(builder.AttachmentLayout.carousel)
@@ -128,13 +128,14 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
 function hotelAsAttachment(hotel) {
     return new builder.HeroCard()
         .title(hotel.name)
-        .subtitle('%d stars. %d reviews. From $%d per night.', hotel.rating, hotel.numberOfReviews, hotel.priceStarting)
-        .images([new builder.CardImage().url(hotel.image)])
+        .subtitle('TR %d. Status %d. Description %d.', hotel.rating, hotel.numberOfReviews, hotel.priceStarting)
+        ///        .images([new builder.CardImage().url(hotel.image)])
         .buttons([
             new builder.CardAction()
                 .title('More details')
                 .type('openUrl')
-                .value('https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
+                .value('https://mhweb.ericsson.se/TREditWeb/faces/oo/object.xhtml?eriref=HW12615')
+/// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
         ]);
 }
 
