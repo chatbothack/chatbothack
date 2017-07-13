@@ -29,7 +29,7 @@ bot.recognizer(recognizer);
 
 bot.dialog('SearchTRs', [
     function (session, args, next) {
-        session.send('Welcome to the issue reslover! We are analyzing your message: \'%s\'', session.message.text);
+        session.send('Welcome to the issue resolver! We are analyzing your message: \'%s\'', session.message.text);
 
         // try extracting entities
         var trEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Issue');
@@ -81,13 +81,13 @@ bot.dialog('SearchTRs', [
 ]).triggerAction({
     matches: 'SearchTRs',
     onInterrupted: function (session) {
-        session.send('Please provide a destination');
+        session.send('Please refine your search');
     }
 });
 
 bot.dialog('getComponentDetails', [
     function (session, args, next) {
-        session.send('Welcome to the issue reslover! We are analyzing your message: \'%s\'', session.message.text);
+        session.send('Welcome to the issue resolver! We are analyzing your message: \'%s\'', session.message.text);
 
         // try extracting entities
 
@@ -98,7 +98,7 @@ bot.dialog('getComponentDetails', [
             next({ response: cmEntity.entity });
         } else {
             // no entities detected, ask user for a destination
-            builder.Prompts.text(session, 'Please enter your destination');
+            builder.Prompts.text(session, 'Please refine your search');
         }
     },
     function (session, results) {
@@ -194,6 +194,22 @@ function hotelAsAttachment(hotel) {
 }
 
 function componentAsAttachment(hotel) {
+	console.log("hotel.name: %s", hotel.name);
+	if (hotel.name === 'fc') {
+       return new builder.HeroCard()
+        .title(hotel.name)
+        //.subtitle('Component %s. Status %d. Description %d.', hotel.name, hotel.numberOfReviews, hotel.priceStarting)
+        ///        .images([new builder.CardImage().url(hotel.image)])
+        .buttons([
+            new builder.CardAction()
+                .title('Wiki Link')
+                .type('openUrl')
+                .value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/bssf-function-control/index.php/Main_Page')
+				//.value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/mlm/index.php/Main_Page')
+/// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
+        ]);
+	}
+	else if (hotel.name === 'sr') {
     return new builder.HeroCard()
         .title(hotel.name)
         //.subtitle('Component %s. Status %d. Description %d.', hotel.name, hotel.numberOfReviews, hotel.priceStarting)
@@ -202,9 +218,25 @@ function componentAsAttachment(hotel) {
             new builder.CardAction()
                 .title('Wiki Link')
                 .type('openUrl')
-                .value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/mlm/index.php/Main_Page')
+                .value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/bssf-service-registry/index.php/Main_Page')
+				//.value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/mlm/index.php/Main_Page')
 /// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
         ]);
+	}	
+	else {
+    return new builder.HeroCard()
+        .title(hotel.name)
+        //.subtitle('Component %s. Status %d. Description %d.', hotel.name, hotel.numberOfReviews, hotel.priceStarting)
+        ///        .images([new builder.CardImage().url(hotel.image)])
+        .buttons([
+            new builder.CardAction()
+                .title('Wiki Link')
+                .type('openUrl')
+                .value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/bssf-service-registry/index.php/Main_Page')
+				//.value('https://openalm.lmera.ericsson.se/plugins/mediawiki/wiki/mlm/index.php/Main_Page')
+/// 'https://www.bing.com/search?q=hotels+in+' + encodeURIComponent(hotel.location))
+        ]);		
+	}
 }
 
 function reviewAsAttachment(review) {
