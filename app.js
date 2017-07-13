@@ -27,13 +27,13 @@ var bot = new builder.UniversalBot(connector, function (session) {
 var recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL);
 bot.recognizer(recognizer);
 
-bot.dialog('SearchHotels', [
+bot.dialog('SearchTRs', [
     function (session, args, next) {
         session.send('Welcome to the issue reslover! We are analyzing your message: \'%s\'', session.message.text);
 
         // try extracting entities
         var cityEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'builtin.geography.city');
-        var trEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'AirportCode');
+        var trEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Issue');
         var cmEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Component');
         if (cityEntity) {
             // city entity detected, continue to next step
@@ -82,7 +82,7 @@ bot.dialog('SearchHotels', [
             });
     }
 ]).triggerAction({
-    matches: 'SearchHotels',
+    matches: 'SearchTRs',
     onInterrupted: function (session) {
         session.send('Please provide a destination');
     }
@@ -158,7 +158,7 @@ bot.dialog('ShowHotelsReviews', function (session, args) {
 });
 
 bot.dialog('Help', function (session) {
-    session.endDialog('Hi! Try asking me things like \'search hotels in Seattle\', \'search hotels near LAX airport\' or \'show me the reviews of The Bot Resort\'');
+    session.endDialog('Welcome ! Try asking me things like \'Give me details for function control\', \'Is there any TR for MSV Admin Portal\' or \'Report an issue with SR, here is the login info.\'');
 }).triggerAction({
     matches: 'Help'
 });
